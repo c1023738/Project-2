@@ -1,0 +1,488 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Input;
+
+
+class Program
+{
+    class Lists
+    {
+
+        // Store information from text documents
+        public List<string> userName = new List<string>();
+        public List<string> username = new List<string>();
+        public List<string> password = new List<string>();
+        public List <string> movieName = new List<string>();
+        public List<string> movieScore = new List<string>();
+        public string usernameInput;
+        public string passwordInput;
+        public int userCount; // count users
+        
+        public void movieList()
+        {
+            List<string> list = new List<string>();
+            string data = File.ReadAllText("movies.txt");
+
+            list.Add(data);
+
+            foreach (string movie in list)
+            {
+                string[] temp = movie.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries); // splits when when there is another line is used
+                userCount = temp.Length;
+                string[] movieInfo = new string[1];
+                for (int i = 0; i < temp.Length; i++)
+                {
+                    movieInfo = temp[i].Split(",".ToCharArray(), StringSplitOptions.RemoveEmptyEntries); // splits when "," is used
+                    movieName.Add(movieInfo[0]);
+                    movieScore.Add(movieInfo[1]);
+                }
+            }
+        }
+        public void UserList() // gathers info from txt documents and then strips the line of information into sperate lists like firstname, lastname and password
+        {
+            List<string> list = new List<string>();
+            string data = File.ReadAllText("userInfo.txt");
+
+            list.Add(data);
+
+            foreach (string user in list)
+            {
+                string[] temp = user.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries); // splits when when there is another line is used
+                userCount = temp.Length;
+                string[] userInfo = new string[1];
+                for (int i = 0; i < temp.Length; i++)
+                {
+                    userInfo = temp[i].Split(",".ToCharArray(), StringSplitOptions.RemoveEmptyEntries); // splits when "," is used
+                    
+                    username.Add(userInfo[0]);              
+                    password.Add(userInfo[1]);
+                }
+            }
+        }
+   
+    }
+
+    
+    public static void Main(String[] args) // Main Code
+    {
+        Lists Lists = new Lists(); // Calling user info for login
+        Lists.UserList();
+        Lists.movieList();
+        loginUser();
+        movieTable(Lists.movieName, Lists.movieScore);
+        
+        void addMovie()
+        {
+            Console.Clear();
+
+            Console.WriteLine("       Add Movie");
+            Console.Write("Name: ");
+            string newMovieName = Console.ReadLine();
+            
+            bool isNumber = false;
+            string newMovieScore = "";
+            while (isNumber == false)
+            {
+                Console.Write("Score:");
+                newMovieScore = Console.ReadLine();
+                int number;
+                isNumber = int.TryParse(newMovieScore, out number);
+                if (Convert.ToInt32(newMovieScore) < 0 || Convert.ToInt32(newMovieScore) > 10)
+                {
+                    isNumber = false;
+                }
+
+
+            }
+            
+
+            Console.Clear();
+            Console.WriteLine("Name: " + newMovieName);
+            Console.WriteLine("Score: " + newMovieScore);
+            while (true)
+            {
+
+            Console.Write("Do you wish to add this to the database?: Yes (Y) or No (N)");
+            string answer = Console.ReadLine().ToLower();
+            if (answer == "N")
+            {
+                addMovie();
+            }
+            else if (answer == "y")
+            {
+                break;
+            }
+            }
+            Lists.movieName.Add(newMovieName);
+            Lists.movieScore.Add(newMovieScore);
+            movieTable(Lists.movieName, Lists.movieScore);
+
+        }
+        
+           void editMovie(List<string> movieNames, List<string> movieScores)
+        {
+            Console.Clear();
+
+            Console.WriteLine("       Edit Movie");
+            int i = 1;
+            Console.WriteLine("{0,-20} {1,5}\n", "Name", "Score");
+            for (int ctr = 0; ctr < movieNames.Count; ctr++)
+                Console.WriteLine(i++ + "." + "{0,-20} {1,5:N1}", movieNames[ctr], movieScores[ctr]);            
+            Console.Write("Please type and enter the number of the movie you wish to edit: ");
+            int movieNumber = Convert.ToInt32(Console.ReadLine());
+
+            int movieIndex = movieNumber -1;
+
+            int oldMovieNameIndex = Lists.movieName.IndexOf(movieNames[movieIndex]);
+           
+            int oldMovieScoreIndex = Lists.movieScore.IndexOf(movieScores[movieIndex]);
+
+            Console.Clear();
+            Console.WriteLine("Previous Movie Name: " + Lists.movieName[oldMovieNameIndex]);
+            Console.WriteLine("Previous Movie Score: " + Lists.movieScore[oldMovieScoreIndex]);
+
+            Console.Write("New Movie Name:");
+            string newMovieName = Console.ReadLine();
+
+            bool isNumber = false;
+            string newMovieScore = "";
+            while (isNumber == false)
+            {
+                Console.Write("New Movie Score:");
+                newMovieScore = Console.ReadLine();
+                int number;
+                isNumber = int.TryParse(newMovieScore, out number);
+                if (Convert.ToInt32(newMovieScore) < 0 || Convert.ToInt32(newMovieScore) > 10)
+                {
+                    isNumber = false;
+                }
+
+
+            }
+            
+
+            
+            
+            while (true)
+            {
+
+                Console.Write("Do you wish to add this to the database?: Yes (Y) or No (N)");
+                string answer = Console.ReadLine().ToLower();
+                if (answer == "N")
+                {
+                    addMovie();
+                }
+                else if (answer == "y")
+                {
+                    break;
+                }
+            }
+
+            Lists.movieName[oldMovieNameIndex] = newMovieName;
+            Lists.movieScore[oldMovieScoreIndex] = newMovieScore;
+            movieTable(Lists.movieName, Lists.movieScore);
+
+
+
+        }
+        void deleteMovie(List<string> movieNames, List<string> movieScores)
+        {
+            Console.Clear();
+
+            Console.WriteLine("       Delete Movie");
+            int i = 1;
+            Console.WriteLine("{0,-20} {1,5}\n", "Name", "Score");
+            for (int ctr = 0; ctr < movieNames.Count; ctr++)
+                Console.WriteLine(i++ + "." + "{0,-20} {1,5:N1}", movieNames[ctr], movieScores[ctr]);            
+            Console.Write("Please type and enter the number of the movie you wish to delete: ");
+            int movieNumber = Convert.ToInt32(Console.ReadLine());
+            string movieName = Lists.movieName[movieNumber - 1];
+            while (true)
+            {
+
+                Console.Write("Do you wish to add this to the database?: Yes (Y) or No (N)");
+                string answer = Console.ReadLine().ToLower();
+                if (answer == "N")
+                {
+                    addMovie();
+                }
+                else if (answer == "y")
+                {
+                    break;
+                }
+            }
+            Lists.movieName.Remove(movieName);
+            movieTable(Lists.movieName, Lists.movieScore);
+
+
+        }
+        void saveMovieList()
+        {
+            List<string> movieList = new List<string>();
+            string movieData;
+            for(int i = 0; i < Lists.movieName.Count; i++)
+            {
+                movieData = Lists.movieName[i] +  "," + Lists.movieScore[i];
+                movieList.Add(movieData);
+            }
+            File.WriteAllLines("movies.txt", movieList);
+            Console.Clear();
+        }
+        
+     
+        void loginUser()
+        {           
+
+            Console.Write("Username: ");
+            string username = Console.ReadLine();
+            Console.Write("Password: ");
+            string password = Console.ReadLine();
+
+            if (username == "" || password == "")
+            {
+                loginUser();
+            }
+            
+            
+            Lists.usernameInput = username;
+            Lists.passwordInput = password;
+            
+            validation(username,password);
+
+        }
+        void validation(string usr,string pass)
+        {
+            if (Lists.username.Contains(usr) && Lists.password.Contains(pass))
+            {
+               
+                int usrIndex = Lists.username.FindIndex(a => a.Contains(usr));
+                
+                int passIndex = Lists.password.FindIndex(a => a.Contains(pass));
+                if (usrIndex == passIndex)
+                {
+                    
+                }
+                else
+                {
+                    Console.WriteLine("Please try again");
+                    loginUser();
+                }
+                
+            }
+            else
+            {
+                Console.WriteLine("Please try again");
+                loginUser();
+            } 
+            
+        }
+        void movieTable(List<string>movieNames, List<string>movieScores)
+        {
+            saveMovieList();
+            int i = 1;
+            Console.WriteLine("{0,-20} {1,5}\n", "Name", "Score");
+            for (int ctr = 0; ctr < movieNames.Count; ctr++)
+                Console.WriteLine( i++ + "." + "{0,-20} {1,5:N1}", movieNames[ctr], movieScores[ctr]);
+            if (Lists.usernameInput == "admin" && Lists.passwordInput == "pass3")
+            {
+                Console.WriteLine("\nAdd(A)      Edit(E)       Delete(D)     Admin Pannel(X) ");
+            }
+            else
+            {
+                Console.WriteLine("\nAdd(A)      Edit(E)       Delete(D)");
+            }
+            
+            Console.Write("Please type and enter the letter of the action you wish to do: ");
+            string action = Console.ReadLine().ToLower();
+
+            if (action == "a")
+            {
+                addMovie();
+            }
+            else if (action == "e")
+            {
+                editMovie(movieNames,movieScores);
+            }
+            else if (action == "d")
+            {
+                deleteMovie(movieNames, movieScores);
+            }
+            else if (action == "x")
+            {
+                if (Lists.usernameInput == "admin" && Lists.passwordInput == "pass3")
+                {
+                    adminPannel();
+                }
+                    
+            }
+        }
+
+        //////////////////////////////////////////////////////
+        ///
+
+        void addUser()
+        {
+            Console.Clear();
+
+            Console.WriteLine("       Add User");
+            Console.Write("Username: ");
+            string newUsername = Console.ReadLine();           
+            Console.Write("Password:");
+            string newPassword = Console.ReadLine();
+                
+
+
+            Console.Clear();
+            Console.WriteLine("Name: " + newUsername);
+            Console.WriteLine("Score: " + newPassword);
+            while (true)
+            {
+
+                Console.Write("Do you wish to add this to the database?: Yes (Y) or No (N)");
+                string answer = Console.ReadLine().ToLower();
+                if (answer == "N")
+                {
+                    addMovie();
+                }
+                else if (answer == "y")
+                {
+                    break;
+                }
+            }
+            Lists.username.Add(newUsername);
+            Lists.password.Add(newPassword);
+            adminPannel ();
+
+        }
+
+        void editUser()
+        {
+            Console.Clear();
+
+            Console.WriteLine("       Edit User");
+            int i = 1;
+            Console.WriteLine("{0,-20} {1,5}\n", "Username", "Password");
+            for (int ctr = 0; ctr < Lists.username.Count; ctr++)
+                Console.WriteLine(i++ + "." + "{0,-20} {1,5:N1}", Lists.username[ctr], Lists.password[ctr]);
+            Console.Write("Please type and enter the number of the username you wish to edit: ");
+            int usernameNumber = Convert.ToInt32(Console.ReadLine());
+
+            int usernameIndex = usernameNumber - 1;
+
+            int oldUsername = Lists.username.IndexOf(Lists.username[usernameIndex]);
+
+            int oldPassword = Lists.password.IndexOf(Lists.password[usernameIndex]);
+
+            Console.Clear();
+            Console.WriteLine("Previous Username: " + Lists.username[oldUsername]);
+            Console.WriteLine("Previous Password: " + Lists.password[oldPassword]);
+
+            Console.Write("New Username:");
+            string newUsername = Console.ReadLine();      
+            Console.Write("New Password:");
+            string newPassword = Console.ReadLine();           
+
+            while (true)
+            {
+
+                Console.Write("Do you wish to add this to the database?: Yes (Y) or No (N)");
+                string answer = Console.ReadLine().ToLower();
+                if (answer == "N")
+                {
+                    addUser();
+                }
+                else if (answer == "y")
+                {
+                    break;
+                }
+            }
+
+            Lists.username[oldUsername] = newUsername;
+            Lists.password[oldPassword] = newPassword;
+            adminPannel();
+
+
+
+        }
+        void deleteUser()
+        {
+            Console.Clear();
+
+            Console.WriteLine("       Delete User");
+            int i = 1;
+            Console.WriteLine("{0,-20} {1,5}\n", "Username", "Password");
+            for (int ctr = 0; ctr < Lists.username.Count; ctr++)
+                Console.WriteLine(i++ + "." + "{0,-20} {1,5:N1}", Lists.username[ctr], Lists.password[ctr]);
+            Console.Write("Please type and enter the number of the user you wish to delete: ");
+            int usernameNumber = Convert.ToInt32(Console.ReadLine());
+            string userIndex = Lists.username[usernameNumber - 1];
+            while (true)
+            {
+
+                Console.Write("Do you wish to add this to the database?: Yes (Y) or No (N)");
+                string answer = Console.ReadLine().ToLower();
+                if (answer == "N")
+                {
+                    addMovie();
+                }
+                else if (answer == "y")
+                {
+                    break;
+                }
+            }
+            Lists.username.Remove(userIndex);
+            Lists.password.Remove(userIndex);
+            adminPannel();
+
+
+        }
+        void saveUserList()
+        {
+            List<string> userList = new List<string>();
+            string userData;
+            for (int i = 0; i < Lists.username.Count; i++)
+            {
+                userData = Lists.username[i] + "," + Lists.password[i];
+                userList.Add(userData);
+            }
+            File.WriteAllLines("userInfo.txt", userList);
+            Console.Clear();
+        }
+
+       
+        void adminPannel()
+        {
+            saveUserList();
+            int i = 1;
+            Console.WriteLine("{0,-20} {1,5}\n", "Username", "Password");
+            for (int ctr = 0; ctr < Lists.username.Count; ctr++)
+                Console.WriteLine(i++ + "." + "{0,-20} {1,5:N1}", Lists.username[ctr], Lists.password[ctr]);
+
+            Console.WriteLine("\nAdd(A)      Edit(E)       Delete(D)     Movie Pannel(X) ");
+
+            Console.Write("Please type and enter the letter of the action you wish to do: ");
+            string action = Console.ReadLine().ToLower();
+
+            if (action == "a")
+            {
+                addUser();
+            }
+            else if (action == "e")
+            {
+                editUser();
+            }
+            else if (action == "d")
+            {
+                deleteUser();
+            }
+            else if (action == "x")
+            {
+                movieTable(Lists.movieName, Lists.movieScore);
+
+            }
+        }
+    }
+}
